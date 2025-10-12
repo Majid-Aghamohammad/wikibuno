@@ -19,6 +19,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'phone_number': {'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
+            'password': {'write_only': True},
+            'password_confirm': {'write_only': True}
         }
     
     def validate(self, attrs):
@@ -33,6 +35,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        # Generate username from phone number
+        username = f"user_{validated_data['phone_number']}"
+        validated_data['username'] = username
         user = User.objects.create_user(**validated_data)
         # ایجاد پروفایل کاربر
         UserProfile.objects.create(user=user)
@@ -51,13 +56,19 @@ class UserLoginSerializer(serializers.Serializer):
         password = attrs.get('password')
         
         if phone_number and password:
-            user = authenticate(phone_number=phone_number, password=password)
-            if not user:
+            # Find user by phone number
+            try:
+                user = User.objects.get(phone_number=phone_number)
+                if user.check_password(password):
+                    if user.is_active:
+                        attrs['user'] = user
+                        return attrs
+                    else:
+                        raise serializers.ValidationError("حساب کاربری غیرفعال است")
+                else:
+                    raise serializers.ValidationError("شماره تلفن یا رمز عبور اشتباه است")
+            except User.DoesNotExist:
                 raise serializers.ValidationError("شماره تلفن یا رمز عبور اشتباه است")
-            if not user.is_active:
-                raise serializers.ValidationError("حساب کاربری غیرفعال است")
-            attrs['user'] = user
-            return attrs
         else:
             raise serializers.ValidationError("شماره تلفن و رمز عبور الزامی است")
 

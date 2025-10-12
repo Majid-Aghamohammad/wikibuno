@@ -84,8 +84,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     """
     View برای مشاهده و ویرایش پروفایل کاربر
     """
-    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return UserUpdateSerializer
+        return UserSerializer
     
     def get_object(self):
         return self.request.user
@@ -132,7 +136,9 @@ def user_dashboard(request):
     View برای داشبورد کاربر
     """
     user = request.user
-    profile = user.profile
+    
+    # ایجاد پروفایل اگر وجود ندارد
+    profile, created = UserProfile.objects.get_or_create(user=user)
     
     # آمار کاربر
     stats = {

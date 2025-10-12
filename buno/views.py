@@ -1,4 +1,5 @@
 from rest_framework import status, generics, permissions, filters
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
@@ -72,7 +73,7 @@ class CafeDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # فقط مالک کافه یا ادمین می‌تواند ویرایش کند
         if cafe.owner != user and not user.is_staff:
-            raise permissions.PermissionDenied("شما فقط می‌توانید کافه‌های خود را ویرایش کنید")
+            raise PermissionDenied("شما فقط می‌توانید کافه‌های خود را ویرایش کنید")
         
         # اگر کاربر عادی است، پس از ویرایش نیاز به تایید مجدد دارد
         if not user.is_staff:
@@ -83,7 +84,7 @@ class CafeDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         user = self.request.user
         if instance.owner != user and not user.is_staff:
-            raise permissions.PermissionDenied("شما فقط می‌توانید کافه‌های خود را حذف کنید")
+            raise PermissionDenied("شما فقط می‌توانید کافه‌های خود را حذف کنید")
         instance.delete()
 
 
@@ -109,7 +110,7 @@ class CafeMenuView(generics.ListCreateAPIView):
         
         # فقط مالک کافه یا ادمین می‌تواند منو اضافه کند
         if cafe.owner != user and not user.is_staff:
-            raise permissions.PermissionDenied("شما فقط می‌توانید منوی کافه‌های خود را ویرایش کنید")
+            raise PermissionDenied("شما فقط می‌توانید منوی کافه‌های خود را ویرایش کنید")
         
         serializer.save(cafe=cafe)
 
@@ -140,7 +141,7 @@ class CafeMenuDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # فقط مالک کافه یا ادمین می‌تواند منو ویرایش کند
         if cafe.owner != user and not user.is_staff:
-            raise permissions.PermissionDenied("شما فقط می‌توانید منوی کافه‌های خود را ویرایش کنید")
+            raise PermissionDenied("شما فقط می‌توانید منوی کافه‌های خود را ویرایش کنید")
         serializer.save()
     
     def perform_destroy(self, instance):

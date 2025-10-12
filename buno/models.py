@@ -122,12 +122,12 @@ class Cafe(models.Model):
     def update_rating(self):
         """به‌روزرسانی امتیاز میانگین کافه"""
         from django.db.models import Avg
-        avg_rating = self.ratings.aggregate(avg=Avg('rating'))['avg']
+        avg_rating = self.comments.aggregate(avg=Avg('rating'))['avg']
         if avg_rating:
             self.average_rating = round(avg_rating, 2)
         else:
             self.average_rating = 0.00
-        self.total_reviews = self.ratings.count()
+        self.total_reviews = self.comments.count()
         self.save(update_fields=['average_rating', 'total_reviews'])
 
 

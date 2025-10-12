@@ -76,6 +76,14 @@ class LikeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+    
+    def validate(self, attrs):
+        # بررسی تکراری نبودن لایک
+        user = self.context['request'].user
+        cafe_id = self.context['view'].kwargs.get('cafe_id')
+        if Like.objects.filter(user=user, cafe_id=cafe_id).exists():
+            raise serializers.ValidationError("شما قبلاً این کافه را لایک کرده‌اید")
+        return attrs
 
 
 class CommentSerializer(serializers.ModelSerializer):
